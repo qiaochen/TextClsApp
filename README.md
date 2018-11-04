@@ -1,31 +1,7 @@
-## Project Components
-
-This project is a text classification system. For a message involving disaster relief, the system tries to identify the proper types of responses that are required. 
-
-It consists of three components:
-
-### 1. ETL Pipeline
-Implemented in `process_data.py`.
-1. Loads the messages and categories datasets
-2. Merges the two datasets for model training and testing
-3. Cleans the data
-4. Stores the cleaned data in a SQLite database
-
-### 2. NLP and ML Pipeline
-Implemented in `train_classifier.py`.
-1. Loads data from the SQLite database
-2. Splits the dataset into training and test sets
-3. Builds a text processing pipline
-4. Builds a machine learning pipeline incorporates feature extraction and transformation
-5. Trains and tunes a model using GridSearchCV
-6. Outputs results on the test set
-7. Exports the final model as a pickle file
-
-### 3. Flask Web App
-1. The web app that visualizes the statistics of the dataset
-2. Responds to user input and classify the message
-3. Display the classification result
-
+# Text Classification for disaster relief matching
+This project is a text classification system for categorizing disaster relief types. 
+For a message that mentions disaster relief, the system tries to identify the proper types of responses that are required.
+The classification model is a GradientBoostingClassifier trained on tfidf and message statistic features.
 
 ## Usage
 
@@ -72,6 +48,31 @@ https://SPACEID-3001.SPACEDOMAIN
 Where SPACEID and SPACEDOMAIN can be copied from the output of `env|grep WORK`, and 3001 is the default FLASK server port number.
 An example using the SPACEID and SPACEDOMAIN above is like this: `https://{}-3001.{}`
 
+## Project Components
+
+This project consists of three components:
+
+### 1. ETL Pipeline
+Implemented in `process_data.py`.
+1. Loads the messages and categories datasets
+2. Merges the two datasets for model training and testing
+3. Cleans the data
+4. Stores the cleaned data in a SQLite database
+
+### 2. NLP and ML Pipeline
+Implemented in `train_classifier.py`.
+1. Loads data from the SQLite database
+2. Splits the dataset into training and test sets
+3. Builds a text processing pipline
+4. Builds a machine learning pipeline incorporates feature extraction and transformation
+5. Trains and tunes a model using GridSearchCV
+6. Outputs results on the test set
+7. Exports the final model as a pickle file
+
+### 3. Flask Web App
+1. The web app that visualizes the statistics of the dataset
+2. Responds to user input and classify the message
+3. Display the classification result
 
 
 
