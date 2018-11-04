@@ -1,24 +1,135 @@
-import sys
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Oct 30 10:44:11 2018
+@author: chen
+"""
 
+
+from sqlalchemy import create_engine
+import pandas as pd
+import string
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.decomposition import TruncatedSVD
+from sklearn.metrics import classification_report
+from sklearn.preprocessing import StandardScaler
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+import numpy as np
+import pickle
+import re
+import sys
+from feature_extractor import TextStatisticsComputer, url_regex
+
+nltk.download('averaged_perceptron_tagger')
+nltk.download('stopwords')
+nltk.download('punkt')
+nltk.download('wordnet')
+nltk.download('words')
+nltk.download('maxent_ne_chunker')
+stop_words = set(stopwords.words('english'))
+lemmatizer = WordNetLemmatizer()
+ONE_LABEL_COL = "child_alone"
+TABLE_NAME = "tb_msg"
 
 def load_data(database_filepath):
-    pass
+    """
+    Load data from sqlite databse
+    :param database_filepath: database path
+    :return: Feature and categories
+    """
+    engine = create_engine('sqlite:///{}'.format(database_filepath))
+    df = pd.read_sql_table(TABLE_NAME,con=engine)
+    X = df.message
+    df_dropped = df.drop(ONE_LABEL_COL, axis=1) # the child_alone category has no positive cases
+    Y = df_dropped.iloc[:,4:]
+    return X, Y, list(df_dropped.columns[4:])
 
 
 def tokenize(text):
-    pass
+    """
+    clean and tokenize text to words
+    :param text: raw message text
+    :return: cleaned and tokenized text
+    """
+    detected_urls = re.findall(url_regex, text)
+    for url in detected_urls:
+        text = text.replace(url, "@url")
+    tokens = word_tokenize(text)
+    table = str.maketrans('', '', string.punctuation)
+    stripped = [w.translate(table) for w in tokens]
+    # remove remaining tokens that are not alphabetic
+    words = [word for word in stripped if word.isalpha()]
+    # filter out stop words
+    words = [lemmatizer.lemmatize(w) for w in words if not w in stop_words]
+    return words
 
 
 def build_model():
-    pass
+    """
+    Build the model pipline
+    :return: The pipline of the whole model
+    """
+    pipeline = Pipeline([
+        ('features', FeatureUnion([
+            ('tfidf_line', Pipeline([
+                ('tfidf', TfidfVectorizer(analyzer=tokenize, min_df=3)),
+                ('svd', TruncatedSVD(n_components=256)),
+            ])),
+            ('stats_line', Pipeline([
+                ('statistics', TextStatisticsComputer()),
+                ('std', StandardScaler()),
+            ]))
+        ])),
+        ('clr', MultiOutputClassifier(GradientBoostingClassifier(
+            loss="deviance")))])
+    parameters = {"clr__estimator__learning_rate": [0.1, 1, 0.01, 0.001],
+                  "clr__estimator__n_estimators": [100, 500, 1000],
+                  'clr__estimator__max_depth': [1, 2, 3],
+                  'clr__estimator__max_leaf_nodes': [3, 5, 9],
+                  'clr__estimator__max_features': [0.5, 0.8, 'sqrt', 'log2', None]}
+    gridcv = GridSearchCV(pipeline, param_grid=parameters, cv=5, n_jobs=-1, verbose=2)
+    return gridcv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    """
+    Evaluates trained model
+    :param model: Trained model
+    :param X_test: test features
+    :param Y_test: test labels
+    :param category_names: names of the labels
+    :return: reports and f1 scores
+    """
+    reports = []
+    f1s = []
+    preds = model.predict(X_test)
+    for idx, col in enumerate(category_names):
+        reports.append(classification_report(Y_test[:, idx], preds[:, idx], output_dict =True))
+        print("="*20)
+        print(reports[-1])
+        print("-"*20)
+        f1s.append(reports[-1]['1']['f1-score'])
+    print("Average F1 score: ", np.mean(f1s))
+    return reports, f1s
 
 
 def save_model(model, model_filepath):
-    pass
+    """
+    Save the model
+    :param model: trained model
+    :param model_filepath: output path
+    :return: output_path
+    """
+    with open(model_filepath, 'wb') as out_file:
+        pickle.dump(model.best_estimator_, out_file)
+    return model_filepath
 
 
 def main():
