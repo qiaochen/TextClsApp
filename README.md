@@ -1,6 +1,7 @@
 ## Project Components
 
-The project is a text classification system for identifying proper responses to disaster relief. 
+This project is a text classification system. For a message involving disaster relief, the system tries to identify the proper types of responses that are required. 
+
 It consists of three components:
 
 ### 1. ETL Pipeline
@@ -40,14 +41,14 @@ pip install .
 cd data
 python process_data.py disaster_messages.csv disaster_categories.csv DisasterResponse.db
 ```
-This will produce the database `DisasterResponse.db` (You may rename the database name as you like).
+This will produce the database `DisasterResponse.db` (You may rename the database name as you like, but remember to change the app/run.py file accordingly).
 
 ### 3. NLP and ML process
 ```
 cd models
 python train_classifier.py ../data/DisasterResponse.db classifier.pkl
 ```
-It may take a long time, and end with the trained model `classifier.pkl` (You may rename the model name as you like).
+It may take a long time, and end with the trained model `classifier.pkl` (You may rename the model name as you like, but remember to change the app/run.py file accordingly).
 
 ### 4. Run the Flask Server
 ```
@@ -64,7 +65,7 @@ You'll see output that looks something like this:
 ![img](https://s3.amazonaws.com/video.udacity-data.com/topher/2018/February/5a8e41a1_screen-shot-2018-02-21-at-8.05.18-pm/screen-shot-2018-02-21-at-8.05.18-pm.png)
 
 
-In a new web browser window, type in the following in the url bar:
+In a new web browser window, type in the following url and press enter:
 ```
 https://SPACEID-3001.SPACEDOMAIN
 ```
