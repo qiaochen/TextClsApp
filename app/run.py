@@ -43,6 +43,9 @@ def index():
     # extract data needed for visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
+    pos_ratios = list(df[df.columns[4:]].mean(axis=1))
+    cat_names = list(df.columns[4:])
+    sentiments = df.message.apply(lambda text: TextBlob(text).sentiment[0])
     
     # create visuals
     graphs = [
@@ -63,50 +66,7 @@ def index():
                     'title': "Genre"
                 }
             }
-        }
-    ]
-    
-    # encode plotly graphs in JSON
-    ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]
-    graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
-    
-    ## Positive Categories
-    pos_ratios = list(df[df.columns[4:]].mean(axis=1))
-    cat_names = list(df.columns[4:])
-    
-    # create visuals
-    p_graphs = [
-        {
-            'data': [
-                Bar(
-                    x=cat_names,
-                    y=pos_ratios
-                )
-            ],
-
-            'layout': {
-                'title': 'Ratios of Positive Labels Per-Category',
-                'yaxis': {
-                    'title': "Ratio"
-                },
-                'xaxis': {
-                    'title': "Category"
-                }
-            }
-        }
-    ]
-    
-    # encode plotly graphs in JSON
-    p_ids = ["p_graph-{}".format(i) for i, _ in enumerate(p_graphs)]
-    p_graphJSON = json.dumps(p_graphs, cls=plotly.utils.PlotlyJSONEncoder)
-    
-    
-    ## Length hist gram
-    # extract data needed for visuals
-    message_lengths = df.message.apply(lambda text: len(text))
-    
-    # create visuals
-    l_graphs = [
+        },
         {
             'data': [
                 Histogram(x=message_lengths)
@@ -121,20 +81,7 @@ def index():
                     'title': "Message Length"
                 }
             }
-        }
-    ]
-        
-    # encode plotly graphs in JSON
-    l_ids = ["l_graph-{}".format(i) for i, _ in enumerate(l_graphs)]
-    l_graphJSON = json.dumps(l_graphs, cls=plotly.utils.PlotlyJSONEncoder)
-    
-    
-    # Sentiment hist
-    # extract data needed for visuals
-    sentiments = df.message.apply(lambda text: TextBlob(text).sentiment[0])
-    
-    # create visuals
-    s_graphs = [
+        },
         {
             'data': [
                 Histogram(x=sentiments)
@@ -153,15 +100,11 @@ def index():
     ]
     
     # encode plotly graphs in JSON
-    s_ids = ["s_graph-{}".format(i) for i, _ in enumerate(s_graphs)]
-    s_graphJSON = json.dumps(s_graphs, cls=plotly.utils.PlotlyJSONEncoder)
-
+    ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]
+    graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
     
     # render web page with plotly graphs
-    return render_template('master.html', ids=ids, graphJSON=graphJSON, 
-                                         l_ids=l_ids, l_graphJSON=l_graphJSON,
-                                         s_ids=s_ids, s_graphJSON=s_graphJSON,
-                                         p_ids=p_ids, p_graphJSON=p_graphJSON)
+    return render_template('master.html', ids=ids, graphJSON=graphJSON)
 
 
 # web page that handles user query and displays model results
