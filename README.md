@@ -74,6 +74,28 @@ Implemented in `train_classifier.py`.
 2. Responds to user input and classify the message
 3. Display the classification result
 
+## Folder Structure
+```
+- app
+| - template
+| |- master.html  # main page of web app
+| |- go.html  # classification result page of web app
+|- run.py  # Flask file that runs app
+
+- data
+|- disaster_categories.csv  # data to process 
+|- disaster_messages.csv  # data to process
+|- process_data.py        # program that processes data
+|- DisasterResponse.db  # database to save clean data to
+
+- models
+|- train_classifier.py  # program that trains the classification model
+|- feature_extractor.py # class and functions for nlp and extracting features
+|- classifier.pkl  # saved model 
+
+- README.md
+```
+
 
 
 

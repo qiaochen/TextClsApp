@@ -9,10 +9,23 @@ from textblob import TextBlob
 from sklearn.base import BaseEstimator, TransformerMixin
 from nltk import ne_chunk, pos_tag, word_tokenize
 from nltk.tree import Tree
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+import string
 import re
+import nltk
 import pandas as pd
+
 url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
 
+nltk.download('averaged_perceptron_tagger')
+nltk.download('stopwords')
+nltk.download('punkt')
+nltk.download('wordnet')
+nltk.download('words')
+nltk.download('maxent_ne_chunker')
+stop_words = set(stopwords.words('english'))
+lemmatizer = WordNetLemmatizer()
 
 class TextStatisticsComputer(BaseEstimator, TransformerMixin):
     """
@@ -105,3 +118,21 @@ class TextStatisticsComputer(BaseEstimator, TransformerMixin):
         """
         X_statisitcs = pd.concat([pd.Series(X).apply(extractor) for extractor in self.extractors], axis=1)
         return pd.DataFrame(X_statisitcs)
+    
+def tokenize(text):
+    """
+    clean and tokenize text to words
+    :param text: raw message text
+    :return: cleaned and tokenized text
+    """
+    detected_urls = re.findall(url_regex, text)
+    for url in detected_urls:
+        text = text.replace(url, "@url")
+    tokens = word_tokenize(text)
+    table = str.maketrans('', '', string.punctuation)
+    stripped = [w.translate(table) for w in tokens]
+    # remove remaining tokens that are not alphabetic
+    words = [word for word in stripped if word.isalpha()]
+    # filter out stop words
+    words = [lemmatizer.lemmatize(w) for w in words if not w in stop_words]
+    return words
