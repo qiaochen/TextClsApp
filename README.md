@@ -1,4 +1,4 @@
-# Text Classification for disaster relief matching
+# Text Classification for Disaster Relief Matching
 This project is a text classification system for categorizing disaster relief types. 
 For a message that mentions disaster relief, the system tries to identify the proper types of responses that are required.
 The classification model is a GradientBoostingClassifier trained on tfidf and message statistic features.
