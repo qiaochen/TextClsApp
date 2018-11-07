@@ -5,12 +5,14 @@ import pandas as pd
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from textblob import TextBlob
-
+import numpy as np
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar, Histogram
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
+
+
 ONE_LABEL_COL = "child_alone"
 
 app = Flask(__name__)
@@ -43,17 +45,16 @@ def index():
     # extract data needed for visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
-    pos_ratios = list(df[df.columns[4:]].mean(axis=1))
+    pos_ratios = list((df[df.columns[4:]] > 0).mean(axis=1))
     cat_names = list(df.columns[4:])
-    sentiments = df.message.apply(lambda text: TextBlob(text).sentiment[0])
-    
+    message_lengths = df.message.apply(lambda text: len(TextBlob(text).tokens)).values
     # create visuals
     graphs = [
         {
             'data': [
                 Bar(
                     x=genre_names,
-                    y=genre_counts
+                    y=genre_counts,
                 )
             ],
 
@@ -69,31 +70,37 @@ def index():
         },
         {
             'data': [
-                Histogram(x=message_lengths)
+                Bar(
+                        x=cat_names,
+                        y=pos_ratios
+                )
             ],
 
             'layout': {
-                'title': 'Distribution of message lengths',
+                'title': 'Distribution of Non-Zero labels in Each Category',
                 'yaxis': {
-                    'title': "Count"
+                    'title': "Ratio of Positive Instances"
                 },
                 'xaxis': {
-                    'title': "Message Length"
+                    'title': "Category Name"
                 }
             }
         },
         {
             'data': [
-                Histogram(x=sentiments)
+                Histogram(
+                        x=message_lengths,
+                        xbins=dict(start=np.min(message_lengths), size=0.8, end=np.max(message_lengths))  
+                    )
             ],
 
             'layout': {
-                'title': 'Distribution of message sentiments [-1, +1]',
+                'title': 'Distribution of Message Length',
                 'yaxis': {
                     'title': "Count"
                 },
                 'xaxis': {
-                    'title': "Sentiment score"
+                    'title': "Message Length"
                 }
             }
         }
@@ -114,8 +121,8 @@ def go():
     query = request.args.get('query', '') 
 
     # use model to predict classification for query
-    classification_labels = model.predict([query])[0]
-    one_label_idx = list(df.columns).index(ONE_LABEL_COL)
+    classification_labels = model.predict([query])[0].tolist()
+    one_label_idx = df.columns[4:].tolist().index(ONE_LABEL_COL)
     classification_labels.insert(one_label_idx, 0)
     classification_results = dict(zip(df.columns[4:], classification_labels))
 

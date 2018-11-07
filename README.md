@@ -32,21 +32,12 @@ cd app
 python run.py
 ```
 This will start the web server. 
-Then, open a new terminal, type in:
-```
-env|grep WORK
-```
-
-You'll see output that looks something like this:
-![img](https://s3.amazonaws.com/video.udacity-data.com/topher/2018/February/5a8e41a1_screen-shot-2018-02-21-at-8.05.18-pm/screen-shot-2018-02-21-at-8.05.18-pm.png)
-
 
 In a new web browser window, type in the following url and press enter:
 ```
-https://SPACEID-3001.SPACEDOMAIN
+http://0.0.0.0:3001/
 ```
-Where SPACEID and SPACEDOMAIN can be copied from the output of `env|grep WORK`, and 3001 is the default FLASK server port number.
-An example using the SPACEID and SPACEDOMAIN above is like this: `https://{}-3001.{}`
+You will see the frontpage of the webapp.
 
 ## Project Components
 
