@@ -37,7 +37,9 @@ In a new web browser window, type in the following url and press enter:
 ```
 http://0.0.0.0:3001/
 ```
-You will see the frontpage of the webapp.
+You will see the frontpage of the webapp. Type in a sentence in the input bar, and click the `Classify Message` button, the server will redirect you to the calssification result page.
+
+![img](https://raw.githubusercontent.com/qiaochen/TextClsApp/master/ScreenShot.jpg)
 
 ## Project Components
 
