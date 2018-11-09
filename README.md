@@ -9,7 +9,7 @@ The classification model is a GradientBoostingClassifier trained on tfidf and me
 ```
 git clone https://github.com/qiaochen/TextClsApp
 cd TextClsApp
-pip install .
+pip install -r requirements.txt
 ```
 
 ### 2. ETL process
